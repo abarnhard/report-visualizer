@@ -1,0 +1,31 @@
+{
+  "name": "report-visualizer",
+  "version": "0.0.1",
+  "description": "Visualize report relationships",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon ./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abarnhard/report-visualizer.git"
+  },
+  "author": "Adam Barnhard <adam.barnhard@ingramcontent.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/abarnhard/report-visualizer/issues"
+  },
+  "homepage": "https://github.com/abarnhard/report-visualizer#readme",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "cytoscape": "^3.2.14",
+    "dotenv": "^6.0.0",
+    "express": "^4.16.3",
+    "js-yaml": "^3.12.0",
+    "pug": "^2.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.5"
+  }
+}
