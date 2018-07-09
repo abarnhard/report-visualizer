@@ -7,37 +7,29 @@ exports.parseReports = parseReports;
 function parseReports() {
   const reportDir = process.env.REPORT_DIR;
 
-  const nodes = {
-    appParent: {
-      group: 'nodes',
-      data: {
-        id: 'appParent',
-      },
-    },
-  };
-  const edges = [];
+  let nodes = {};
+  let edges = {};
 
   reportNames = fs.readdirSync(reportDir);
   reportIds = [];
 
   reportNames.forEach((reportName) => {
-    nodes[reportName] = {
-      group: 'nodes',
-      data: {
-        parent: 'appParent',
-      },
+    const reportId = path.basename(reportName, '.yml');
+
+    nodes[reportId] = {
+      data: {},
+      isRoot: true,
     };
 
-    const reportId = path.basename(reportName, '.yml');
     reportIds.push(reportId);
   });
 
   reportNames.forEach((reportName) => {
     const reportYaml = fs.readFileSync(`${reportDir}/${reportName}`);
-
+    const reportId = path.basename(reportName, '.yml');
     const config = yaml.safeLoad(reportYaml, 'utf8');
 
-    nodes[reportName].data.id = config.report.title;
+    nodes[reportId].data.id = config.report.id;
 
     const matchString = `(${reportIds.join(')|(')})`;
 
@@ -45,16 +37,43 @@ function parseReports() {
 
     let match = regex.exec(config.report.sql);
     while (match) {
-      edges.push({
-        id: `${reportName}|${match[0]}`,
-        source: path.basename(reportName, '.yml'),
-        target: match[0],
-      });
+      const targetId = match[0];
+
+      if (!nodes[targetId]) {
+        console.log(`Node id ${targetId} not found`);
+        match = regex.exec(config.report.sql);
+        continue;
+      }
+
+      const edgeId = `${reportId}|${targetId}`;
+      edges[edgeId] = {
+        data: {
+          id: edgeId,
+          source: path.basename(reportName, '.yml'),
+          target: targetId,
+        },
+      }
+
+      nodes[targetId].isRoot = false;
 
       match = regex.exec(config.report.sql);
     }
   });
 
+  let roots = [];
+  nodes = Object.keys(nodes).map((nodeId) => {
+    const node = nodes[nodeId];
 
-  return { nodes, edges, reportIds };
+    if (node.isRoot) { roots.push(nodeId); }
+
+    return {
+      data: node.data,
+    }
+  });
+
+  roots = `#${roots.join(',#')}`;
+
+  edges = Object.keys(edges).map(edgeId => edges[edgeId]);
+
+  return { nodes, edges, roots };
 }
